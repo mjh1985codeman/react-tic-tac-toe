@@ -9,23 +9,72 @@ import "./index.css";
 // Here Square is a React component CLASS or React Component Type.  A component takes in parameters called PROPS (short for 'properties'), and returns
 // a hierchy of views to display via the render() method.  We use these components to tell React what we want to see on the screen.  When our
 // data changes React will efficiently update and re-render our components.
-class Square extends React.Component {
-  // the render method returns a description of what you want to see on the screen.  React takes the description and displays the result.
-  // In particular render return a REACT ELEMENT, which is a lightweight description of what to render.
-  render() {
-    // showing the value being passed from the value prop from the renderSquare method.
-    return <button className="square">{this.props.value}</button>;
-  }
+function Square(props) {
+  // showing the value being passed from the value prop from the renderSquare method.
+  return (
+    //In React, function components are a simpler way to write components that only contain a render method and don’t have their own state.
+    //Instead of defining a class which extends React.Component, we can write a function that takes props as input and returns what should be rendered.
+    //Function components are less tedious to write than classes, and many components can be expressed this way.
+    <button className="square" onClick={props.onClick}>
+      {props.value}
+    </button>
+  );
 }
 
 class Board extends React.Component {
+  //The Board component can tell each Square what to display by passing a prop
   //passing a PROP called value which is passing data from our Board component to our Square component.
+  //To collect data from multiple children, or to have two child components communicate with each other, you need to declare the shared state in their parent component instead. The parent component can pass the state
+  // back down to the children by using props; this keeps the child components in sync with each other and with the parent component.
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      squares: Array(9).fill(null),
+      //Each time a player moves, xIsNext (a boolean) will be flipped to determine which player goes next and the game’s state will be saved.
+      xIsNext: true,
+    };
+  }
+
+  //handleClick Definition:
+  //Note how in handleClick, we call .slice() to create a copy of the squares array to modify instead of modifying the existing array.
+  //There are generally two approaches to changing data. The first approach is to mutate the data by directly changing the data’s values.
+  //The second approach is to replace the data with a new copy which has the desired changes.
+
+  //Example: Data Change WITH Mutation:
+
+  // var player = {score: 1, name: 'Jeff'};
+  // player.score = 2;
+  // Now player is {score: 2, name: 'Jeff'}
+
+  //Example: Data Change WITHOUT Mutation:
+  //var player = {score: 1, name: 'Jeff'};
+
+  // var newPlayer = Object.assign({}, player, {score: 2});
+  // Now player is unchanged, but newPlayer is {score: 2, name: 'Jeff'}
+
+  // Or if you are using object spread syntax proposal, you can write:
+  // var newPlayer = {...player, score: 2};
+
+  handleClick(i) {
+    const squares = this.state.squares.slice();
+    // updated the Board’s handleClick function to flip the value of xIsNext:
+    squares[i] = this.state.xIsNext ? "X" : "O";
+    this.setState({ squares: squares, xIsNext: !this.state.xIsNext });
+  }
+
   renderSquare(i) {
-    return <Square value={i} />;
+    // we’ll pass down a function from the Board to the Square, and we’ll have Square call that function when a square is clicked
+    return (
+      <Square
+        value={this.state.squares[i]}
+        onClick={() => this.handleClick(i)}
+      />
+    );
   }
 
   render() {
-    const status = "Next player: X";
+    const status = "Next player: " + (this.state.xIsNext ? "X" : "O");
 
     return (
       <div>
